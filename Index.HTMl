@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mina Teach Entrance</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#eef3f8;
+ text-align:center;
+ color:#18324b;
+}
+header{
+ background:#123c69;
+ color:white;
+ padding:22px;
+}
+.card{
+ background:white;
+ padding:22px;
+ margin:18px auto;
+ max-width:480px;
+ width:92%;
+ border-radius:14px;
+ box-shadow:0 3px 12px #0001;
+}
+button{
+ display:block;
+ width:100%;
+ padding:14px;
+ margin:10px 0;
+ border:0;
+ border-radius:9px;
+ background:#123c69;
+ color:white;
+ font-size:16px;
+ cursor:pointer;
+}
+button:disabled{opacity:.6}
+.hidden{display:none}
+#timer{
+ font-size:30px;
+ font-weight:bold;
+ color:#c62828;
+}
+#feedback{font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>MINA TEACH</h1>
+<p>Entrance Exam Preparation</p>
+</header>
+
+<div class="card" id="languages">
+<h2>Select Your Language</h2>
+<button onclick="selectLanguage('English')">🇬🇧 English</button>
+<button onclick="selectLanguage('Afaan Oromoo')">🇪🇹 Afaan Oromoo</button>
+<button onclick="selectLanguage('Amharic')">🇪🇹 Amharic</button>
+<button onclick="selectLanguage('Arabic')">🇸🇦 Arabic</button>
+</div>
+
+<div class="card hidden" id="subjects">
+<h2>Select Your Subject</h2>
+<div id="subjectList"></div>
+</div>
+
+<div class="card hidden" id="quiz">
+<h2 id="quizSubject"></h2>
+<p id="progress"></p>
+<p id="timer">01:00</p>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<div class="card hidden" id="result">
+<h2>Exam Completed!</h2>
+<h3 id="score"></h3>
+<p id="percentage"></p>
+<button onclick="restart()">Back to Home</button>
+</div>
+
+<script>
+let language="English";
+let subject="";
+let index=0;
+let points=0;
+let seconds=60;
+let timerInterval=null;
+let answered=false;
+
+const subjects=[
+"English","Mathematics","Biology","Chemistry",
+"Physics","General Knowledge","Aptitude",
+"Afaan Oromoo","History","Geography",
+"Social Studies","Civics and Ethics",
+"Economics","ICT","Environmental Science"
+];
+
+const questions={
+"Mathematics":[
+{q:"What is 5 + 7?",a:["10","12","14","15"],c:1},
+{q:"What is 9 × 6?",a:["45","54","63","36"],c:1},
+{q:"What is 100 ÷ 10?",a:["5","10","20","15"],c:1}
+],
+"Biology":[
+{q:"Which organ pumps blood?",a:["Lung","Heart","Brain","Kidney"],c:1},
+{q:"What is the basic unit of life?",a:["Cell","Tissue","Organ","Bone"],c:0}
+],
+"Chemistry":[
+{q:"What is the chemical formula of water?",a:["CO2","O2","H2O","NaCl"],c:2}
+],
+"Physics":[
+{q:"What is the SI unit of force?",a:["Watt","Newton","Joule","Volt"],c:1}
+],
+"English":[
+{q:"Choose the correct sentence.",a:[
+"She go to school.",
+"She goes to school.",
+"She going school.",
+"She gone school."
+],c:1}
+],
+"History":[
+{q:"Which civilization built the pyramids of Giza?",a:[
+"Roman","Egyptian","Greek","Persian"
+],c:1}
+],
+"Geography":[
+{q:"What is the largest continent?",a:[
+"Africa","Europe","Asia","Australia"
+],c:2}
+],
+"General Knowledge":[
+{q:"What is the capital of Ethiopia?",a:[
+"Hawassa","Addis Ababa","Adama","Bahir Dar"
+],c:1}
+],
+"Aptitude":[
+{q:"What comes next: 2, 4, 6, 8?",a:[
+"9","10","11","12"
+],c:1}
+]
+};
+
+function selectLanguage(lang){
+ language=lang;
+ document.getElementById("languages").classList.add("hidden");
+ document.getElementById("subjects").classList.remove("hidden");
+
+ const list=document.getElementById("subjectList");
+ list.innerHTML="";
+
+ subjects.forEach(s=>{
+  const btn=document.createElement("button");
+  btn.textContent=s;
+  btn.onclick=()=>startQuiz(s);
+  list.appendChild(btn);
+ });
+}
+
+function startQuiz(s){
+ subject=s;
+ index=0;
+ points=0;
+
+ document.getElementById("subjects").classList.add("hidden");
+ document.getElementById("quiz").classList.remove("hidden");
+
+ showQuestion();
+}
+
+function showQuestion(){
+ clearInterval(timerInterval);
+
+ const data=questions[subject];
+
+ if(!data || index>=data.length){
+  finish();
+  return;
+ }
+
+ answered=false;
+ seconds=60;
+
+ const item=data[index];
+
+ document.getElementById("quizSubject").textContent=subject;
+ document.getElementById("progress").textContent=
+ "Question "+(index+1)+" of "+data.length;
+
+ document.getElementById("question").textContent=item.q;
+ document.getElementById("feedback").textContent="";
+ document.getElementById("nextBtn").disabled=false;
+
+ const answers=document.getElementById("answers");
+ answers.innerHTML="";
+
+ item.a.forEach((answer,i)=>{
+  const btn=document.createElement("button");
+  btn.textContent=answer;
+
+  btn.onclick=()=>{
+   if(answered)return;
+   answered=true;
+
+   if(i===item.c){
+    points++;
+    document.getElementById("feedback").textContent=
+    "Correct answer! +1 point";
+   }else{
+    document.getElementById("feedback").textContent=
+    "Incorrect. Correct answer: "+item.a[item.c];
+   }
+
+   answers.querySelectorAll("button").forEach(b=>{
+    b.disabled=true;
+   });
+  };
+
+  answers.appendChild(btn);
+ });
+
+ updateTimer();
+
+ timerInterval=setInterval(()=>{
+  seconds--;
+  updateTimer();
+
+  if(seconds<=0){
+   clearInterval(timerInterval);
+   index++;
+   showQuestion();
+  }
+ },1000);
+}
+
+function updateTimer(){
+ document.getElementById("timer").textContent=
+ "00:"+String(seconds).padStart(2,"0");
+}
+
+function nextQuestion(){
+ if(!answered){
+  document.getElementById("feedback").textContent=
+  "Please select an answer first.";
+  return;
+ }
+
+ index++;
+ showQuestion();
+}
+
+function finish(){
+ clearInterval(timerInterval);
+
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+
+ const total=questions[subject].length;
+ const percent=Math.round((points/total)*100);
+
+ document.getElementById("score").textContent=
+ "Your Score: "+points+" / "+total;
+
+ document.getElementById("percentage").textContent=
+ "Result: "+percent+"%";
+}
+
+function restart(){
+ clearInterval(timerInterval);
+
+ document.getElementById("result").classList.add("hidden");
+ document.getElementById("languages").classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
