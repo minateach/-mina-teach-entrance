@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,41 +9,35 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f1f5f9;
+  background: #eef3f8;
   text-align: center;
 }
 header {
   background: #123c69;
   color: white;
-  padding: 25px;
+  padding: 22px;
 }
 .container {
-  padding: 20px;
+  padding: 15px;
 }
 .card {
   background: white;
   padding: 20px;
   margin: 15px auto;
-  max-width: 420px;
+  max-width: 450px;
   border-radius: 12px;
 }
 button {
-  display: block;
   width: 100%;
-  padding: 15px;
-  margin: 12px 0;
+  padding: 14px;
+  margin: 8px 0;
   border: none;
   border-radius: 8px;
   background: #123c69;
   color: white;
-  font-size: 17px;
+  font-size: 16px;
 }
-button:active {
-  background: #2475bd;
-}
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 </style>
 </head>
 
@@ -57,74 +50,136 @@ button:active {
 
 <div class="container">
 
-<div class="card" id="languagePage">
+<div class="card" id="languages">
 <h2>Select Your Language</h2>
-<p>Choose your learning language</p>
-
-<button onclick="chooseLanguage('English')">🇬🇧 English</button>
-<button onclick="chooseLanguage('Afaan Oromoo')">🇪🇹 Afaan Oromoo</button>
-<button onclick="chooseLanguage('Amharic')">🇪🇹 Amharic</button>
-<button onclick="chooseLanguage('Arabic')">🇸🇦 Arabic</button>
-
+<button onclick="selectLanguage('English')">🇬🇧 English</button>
+<button onclick="selectLanguage('Afaan Oromoo')">🇪🇹 Afaan Oromoo</button>
+<button onclick="selectLanguage('Amharic')">🇪🇹 Amharic</button>
+<button onclick="selectLanguage('Arabic')">🇸🇦 Arabic</button>
 </div>
 
-<div class="card hidden" id="welcomePage">
-<h2 id="welcomeTitle"></h2>
-<p id="welcomeText"></p>
-
-<button onclick="showDashboard()">Continue</button>
-<button onclick="goBack()">Back</button>
+<div class="card hidden" id="subjects">
+<h2 id="subjectTitle">Choose Your Subject</h2>
+<div id="subjectList"></div>
 </div>
 
-<div class="card hidden" id="dashboard">
-<h2>Mina Teach Entrance</h2>
-<p>Prepare Today, Succeed Tomorrow!</p>
-
-<h3>Choose Your Subject</h3>
-<button>English</button>
-<button>Mathematics</button>
-<button>General Knowledge</button>
-<button>Aptitude</button>
-
+<div class="card hidden" id="quiz">
+<h2 id="quizSubject"></h2>
+<p id="question"></p>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button onclick="nextQuestion()">Next Question</button>
+<button onclick="backSubjects()">Back to Subjects</button>
 </div>
 
 </div>
 
 <script>
-let selectedLanguage = "";
+let language = "English";
+let currentSubject = "";
+let questionIndex = 0;
+let score = 0;
 
-function chooseLanguage(language) {
-  selectedLanguage = language;
+const subjects = [
+"English", "Mathematics", "Biology", "Chemistry",
+"Physics", "General Knowledge", "Aptitude",
+"Afaan Oromoo", "History", "Geography",
+"Social Studies", "Civics and Ethics",
+"Economics", "ICT", "Environmental Science"
+];
 
-  let titles = {
-    "English": "Welcome to Mina Teach!",
-    "Afaan Oromoo": "Baga gara Mina Teach dhuftan!",
-    "Amharic": "ወደ ሚና ቲች እንኳን በደህና መጡ!",
-    "Arabic": "مرحباً بكم في مينا تيتش!"
-  };
+const questions = {
+"Mathematics": [
+{q:"What is 5 + 7?", a:["10","12","14","15"], c:1},
+{q:"What is 9 × 6?", a:["45","54","63","36"], c:1}
+],
+"Biology": [
+{q:"Which organ pumps blood?", a:["Lung","Heart","Brain","Kidney"], c:1},
+{q:"What is the basic unit of life?", a:["Cell","Tissue","Organ","Bone"], c:0}
+],
+"Chemistry": [
+{q:"What is the chemical symbol for water?", a:["CO2","O2","H2O","NaCl"], c:2}
+],
+"Physics": [
+{q:"What is the SI unit of force?", a:["Watt","Newton","Joule","Volt"], c:1}
+],
+"English": [
+{q:"Choose the correct sentence.", a:["She go to school.","She goes to school.","She going school.","She gone school."], c:1}
+],
+"History": [
+{q:"Which ancient civilization built the pyramids of Giza?", a:["Roman","Egyptian","Greek","Persian"], c:1}
+],
+"Geography": [
+{q:"What is the largest continent?", a:["Africa","Europe","Asia","Australia"], c:2}
+],
+"General Knowledge": [
+{q:"What is the capital of Ethiopia?", a:["Hawassa","Addis Ababa","Adama","Bahir Dar"], c:1}
+],
+"Aptitude": [
+{q:"What comes next: 2, 4, 6, 8, ...?", a:["9","10","11","12"], c:1}
+]
+};
 
-  let descriptions = {
-    "English": "Learn and prepare for your entrance exam.",
-    "Afaan Oromoo": "Baradhaa, qormaata seensaa keessaniif qophaa'aa.",
-    "Amharic": "ለመግቢያ ፈተናዎ ይዘጋጁ።",
-    "Arabic": "استعد لامتحان القبول الخاص بك."
-  };
-
-  document.getElementById("languagePage").classList.add("hidden");
-  document.getElementById("welcomePage").classList.remove("hidden");
-
-  document.getElementById("welcomeTitle").innerText = titles[language];
-  document.getElementById("welcomeText").innerText = descriptions[language];
+function selectLanguage(lang) {
+ language = lang;
+ document.getElementById("languages").classList.add("hidden");
+ document.getElementById("subjects").classList.remove("hidden");
+ showSubjects();
 }
 
-function showDashboard() {
-  document.getElementById("welcomePage").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
+function showSubjects() {
+ let list = document.getElementById("subjectList");
+ list.innerHTML = "";
+ subjects.forEach(subject => {
+  let btn = document.createElement("button");
+  btn.textContent = subject;
+  btn.onclick = () => startQuiz(subject);
+  list.appendChild(btn);
+ });
 }
 
-function goBack() {
-  document.getElementById("welcomePage").classList.add("hidden");
-  document.getElementById("languagePage").classList.remove("hidden");
+function startQuiz(subject) {
+ currentSubject = subject;
+ questionIndex = 0;
+ score = 0;
+ document.getElementById("subjects").classList.add("hidden");
+ document.getElementById("quiz").classList.remove("hidden");
+ showQuestion();
+}
+
+function showQuestion() {
+ let data = questions[currentSubject] || [
+ {q:"Sample question: Which option is correct?", a:["Option A","Option B","Option C","Option D"], c:0}
+ ];
+ let item = data[questionIndex % data.length];
+ document.getElementById("quizSubject").textContent = currentSubject;
+ document.getElementById("question").textContent = item.q;
+ document.getElementById("feedback").textContent = "";
+ let answers = document.getElementById("answers");
+ answers.innerHTML = "";
+ item.a.forEach((answer, index) => {
+  let btn = document.createElement("button");
+  btn.textContent = answer;
+  btn.onclick = () => {
+   if(index === item.c) {
+    score++;
+    document.getElementById("feedback").textContent = "Correct answer!";
+   } else {
+    document.getElementById("feedback").textContent = "Try again! Correct answer: " + item.a[item.c];
+   }
+  };
+  answers.appendChild(btn);
+ });
+}
+
+function nextQuestion() {
+ questionIndex++;
+ showQuestion();
+}
+
+function backSubjects() {
+ document.getElementById("quiz").classList.add("hidden");
+ document.getElementById("subjects").classList.remove("hidden");
 }
 </script>
 
