@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mina Teach Entrance</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#eef3f8;color:#18324b;text-align:center}
+header{background:#123c69;color:white;padding:22px}
+.card{background:white;padding:22px;margin:18px auto;max-width:500px;width:93%;border-radius:14px;box-shadow:0 3px 12px #0001}
+button{width:100%;padding:14px;margin:8px 0;border:0;border-radius:9px;background:#123c69;color:white;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5}
+.hidden{display:none}
+#timer{font-size:30px;color:#c62828;font-weight:bold}
+.small{color:#64748b;font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>MINA TEACH</h1>
+<p>Mathematics Entrance Exam Preparation</p>
+</header>
+
+<div class="card" id="home">
+<h2>Welcome to Mina Teach</h2>
+<p>Select your learning language</p>
+<button onclick="setLanguage('English')">🇬🇧 English</button>
+<button onclick="setLanguage('Afaan Oromoo')">🇪🇹 Afaan Oromoo</button>
+<button onclick="setLanguage('Amharic')">🇪🇹 Amharic</button>
+<button onclick="setLanguage('Arabic')">🇸🇦 Arabic</button>
+</div>
+
+<div class="card hidden" id="grades">
+<h2>Select Your Grade</h2>
+<p class="small">Choose your grade level</p>
+<div id="gradeButtons"></div>
+</div>
+
+<div class="card hidden" id="topics">
+<h2 id="gradeTitle"></h2>
+<h3>Select Mathematics Topic</h3>
+<div id="topicButtons"></div>
+</div>
+
+<div class="card hidden" id="quiz">
+<h2 id="quizTitle"></h2>
+<p id="progress"></p>
+<p id="timer">01:00</p>
+<h3 id="question"></h3>
+<div id="answers"></div>
+<p id="feedback"></p>
+<button onclick="nextQuestion()" id="nextBtn">Next Question</button>
+</div>
+
+<div class="card hidden" id="result">
+<h2>Exam Result</h2>
+<h3 id="score"></h3>
+<p id="percentage"></p>
+<button onclick="retry()">Practice Again</button>
+<button onclick="backGrades()">Choose Another Grade</button>
+</div>
+
+<script>
+let language="English";
+let grade=9;
+let topic="";
+let index=0;
+let score=0;
+let seconds=60;
+let timer=null;
+let answered=false;
+
+const grades=[9,10,11,12];
+
+const topics=[
+"Algebra","Geometry","Trigonometry",
+"Statistics","Probability","Functions",
+"Sequences and Series","Calculus",
+"Sets and Logic","Number Systems"
+];
+
+const bank={
+9:{
+"Algebra":[
+{q:"Solve: x + 5 = 12",a:["5","6","7","8"],c:2,ex:"Subtract 5 from both sides: x = 7."},
+{q:"What is 3x when x = 4?",a:["7","12","16","9"],c:1,ex:"3 × 4 = 12."},
+{q:"Simplify: 2a + 3a",a:["5a","6a","a","5"],c:0,ex:"Add like terms: 2a + 3a = 5a."}
+],
+"Geometry":[
+{q:"How many degrees are in a triangle?",a:["90","180","270","360"],c:1,ex:"The interior angles of a triangle sum to 180°."},
+{q:"What is the perimeter of a square with side 5 cm?",a:["10 cm","15 cm","20 cm","25 cm"],c:2,ex:"Perimeter = 4 × side = 20 cm."}
+],
+"Trigonometry":[
+{q:"What is sin 30°?",a:["0","1","1/2","√3/2"],c:2,ex:"sin 30° = 1/2."}
+],
+"Statistics":[
+{q:"Find the mean of 2, 4, 6.",a:["3","4","5","6"],c:1,ex:"Mean = (2+4+6)/3 = 4."}
+],
+"Probability":[
+{q:"What is the probability of getting heads on a fair coin?",a:["1/4","1/2","1","0"],c:1,ex:"There are two equally likely outcomes."}
+],
+"Functions":[
+{q:"If f(x)=x+2, find f(3).",a:["3","4","5","6"],c:2,ex:"Replace x with 3: 3+2=5."}
+],
+"Sequences and Series":[
+{q:"Find the next number: 2, 4, 6, 8, ...",a:["9","10","11","12"],c:1,ex:"Add 2 each time."}
+],
+"Calculus":[
+{q:"What is the derivative of x²?",a:["x","2x","x²","2"],c:1,ex:"The power rule gives 2x."}
+],
+"Sets and Logic":[
+{q:"What symbol represents the union of sets?",a:["∩","∪","=","⊂"],c:1,ex:"The union symbol is ∪."}
+],
+"Number Systems":[
+{q:"Which is an irrational number?",a:["2","1/2","√2","4"],c:2,ex:"√2 cannot be expressed as a ratio of integers."}
+]
+},
+10:{
+"Algebra":[
+{q:"Solve: 2x = 18",a:["6","8","9","12"],c:2,ex:"Divide both sides by 2: x=9."}
+],
+"Geometry":[
+{q:"Area of a rectangle with length 8 and width 3?",a:["11","22","24","30"],c:2,ex:"Area = length × width = 24."}
+],
+"Trigonometry":[
+{q:"What is cos 60°?",a:["1","1/2","0","√3/2"],c:1,ex:"cos 60° = 1/2."}
+]
+},
+11:{
+"Algebra":[
+{q:"Solve: x² = 49. What is the positive value of x?",a:["5","6","7","8"],c:2,ex:"The positive square root of 49 is 7."}
+],
+"Functions":[
+{q:"If f(x)=2x+1, find f(4).",a:["7","8","9","10"],c:2,ex:"2(4)+1 = 9."}
+],
+"Sequences and Series":[
+{q:"Find the common difference: 3, 7, 11, 15.",a:["2","3","4","5"],c:2,ex:"Subtract consecutive terms: 7−3=4."}
+]
+},
+12:{
+"Calculus":[
+{q:"Differentiate y = 3x².",a:["3x","6x","6","x³"],c:1,ex:"Using the power rule, dy/dx = 6x."}
+],
+"Probability":[
+{q:"A fair die is rolled. What is the probability of getting 6?",a:["1/2","1/3","1/6","1/4"],c:2,ex:"One of six equally likely outcomes is 6."}
+],
+"Algebra":[
+{q:"Solve: x² − 9 = 0. What are the roots?",a:["3 only","−3 only","−3 and 3","0 and 9"],c:2,ex:"x²=9, so x=±3."}
+]
+}
+};
+
+function show(id){
+document.querySelectorAll(".card").forEach(c=>c.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+
+function setLanguage(l){
+language=l;
+show("grades");
+const div=document.getElementById("gradeButtons");
+div.innerHTML="";
+grades.forEach(g=>{
+let b=document.createElement("button");
+b.textContent="Grade "+g;
+b.onclick=()=>selectGrade(g);
+div.appendChild(b);
+});
+}
+
+function selectGrade(g){
+grade=g;
+show("topics");
+document.getElementById("gradeTitle").textContent="Grade "+g+" Mathematics";
+const div=document.getElementById("topicButtons");
+div.innerHTML="";
+topics.forEach(t=>{
+let b=document.createElement("button");
+b.textContent=t;
+b.onclick=()=>startQuiz(t);
+div.appendChild(b);
+});
+}
+
+function startQuiz(t){
+topic=t;
+index=0;
+score=0;
+show("quiz");
+showQuestion();
+}
+
+function getQuestions(){
+return bank[grade][topic]||[
+{q:"More questions for this topic are coming soon. What is 2 + 2?",a:["2","3","4","5"],c:2,ex:"2 + 2 = 4."}
+];
+}
+
+function showQuestion(){
+clearInterval(timer);
+let data=getQuestions();
+if(index>=data.length){finish();return;}
+
+let item=data[index];
+answered=false;
+seconds=60;
+
+document.getElementById("quizTitle").textContent=
+"Grade "+grade+" - "+topic;
+document.getElementById("progress").textContent=
+"Question "+(index+1)+" of "+data.length;
+document.getElementById("question").textContent=item.q;
+document.getElementById("feedback").textContent="";
+document.getElementById("nextBtn").disabled=false;
+
+let div=document.getElementById("answers");
+div.innerHTML="";
+
+item.a.forEach((a,i)=>{
+let b=document.createElement("button");
+b.textContent=String.fromCharCode(65+i)+". "+a;
+b.onclick=()=>{
+if(answered)return;
+answered=true;
+if(i===item.c){
+score++;
+document.getElementById("feedback").textContent=
+"Correct! "+item.ex;
+}else{
+document.getElementById("feedback").textContent=
+"Incorrect. Correct answer: "+item.a[item.c]+". "+item.ex;
+}
+div.querySelectorAll("button").forEach(x=>x.disabled=true);
+};
+div.appendChild(b);
+});
+
+timer=setInterval(()=>{
+seconds--;
+document.getElementById("timer").textContent=
+"00:"+String(seconds).padStart(2,"0");
+if(seconds<=0){
+clearInterval(timer);
+index++;
+showQuestion();
+}
+},1000);
+
+document.getElementById("timer").textContent="01:00";
+}
+
+function nextQuestion(){
+if(!answered){
+document.getElementById("feedback").textContent=
+"Please choose an answer first.";
+return;
+}
+index++;
+showQuestion();
+}
+
+function finish(){
+clearInterval(timer);
+show("result");
+let total=getQuestions().length;
+document.getElementById("score").textContent=
+"Score: "+score+" / "+total;
+document.getElementById("percentage").textContent=
+"Percentage: "+Math.round(score/total*100)+"%";
+}
+
+function retry(){
+index=0;
+score=0;
+startQuiz(topic);
+}
+
+function backGrades(){
+clearInterval(timer);
+show("grades");
+}
+</script>
+
+</body>
+</html>
