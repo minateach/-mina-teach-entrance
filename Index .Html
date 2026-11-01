@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mina Teach Entrance</title>
+
 <style>
 body {
   margin: 0;
@@ -17,18 +18,20 @@ header {
   color: white;
   padding: 25px;
 }
-.container { padding: 20px; }
+.container {
+  padding: 20px;
+}
 .card {
   background: white;
   padding: 20px;
   margin: 15px auto;
-  max-width: 400px;
+  max-width: 420px;
   border-radius: 12px;
 }
 button {
   display: block;
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   margin: 12px 0;
   border: none;
   border-radius: 8px;
@@ -36,8 +39,15 @@ button {
   color: white;
   font-size: 17px;
 }
+button:active {
+  background: #2475bd;
+}
+.hidden {
+  display: none;
+}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -46,14 +56,77 @@ button {
 </header>
 
 <div class="container">
-<div class="card">
+
+<div class="card" id="languagePage">
 <h2>Select Your Language</h2>
-<button>🇬🇧 English</button>
-<button>🇪🇹 Afaan Oromoo</button>
-<button>🇪🇹 Amharic</button>
-<button>🇸🇦 Arabic</button>
+<p>Choose your learning language</p>
+
+<button onclick="chooseLanguage('English')">🇬🇧 English</button>
+<button onclick="chooseLanguage('Afaan Oromoo')">🇪🇹 Afaan Oromoo</button>
+<button onclick="chooseLanguage('Amharic')">🇪🇹 Amharic</button>
+<button onclick="chooseLanguage('Arabic')">🇸🇦 Arabic</button>
+
 </div>
+
+<div class="card hidden" id="welcomePage">
+<h2 id="welcomeTitle"></h2>
+<p id="welcomeText"></p>
+
+<button onclick="showDashboard()">Continue</button>
+<button onclick="goBack()">Back</button>
 </div>
+
+<div class="card hidden" id="dashboard">
+<h2>Mina Teach Entrance</h2>
+<p>Prepare Today, Succeed Tomorrow!</p>
+
+<h3>Choose Your Subject</h3>
+<button>English</button>
+<button>Mathematics</button>
+<button>General Knowledge</button>
+<button>Aptitude</button>
+
+</div>
+
+</div>
+
+<script>
+let selectedLanguage = "";
+
+function chooseLanguage(language) {
+  selectedLanguage = language;
+
+  let titles = {
+    "English": "Welcome to Mina Teach!",
+    "Afaan Oromoo": "Baga gara Mina Teach dhuftan!",
+    "Amharic": "ወደ ሚና ቲች እንኳን በደህና መጡ!",
+    "Arabic": "مرحباً بكم في مينا تيتش!"
+  };
+
+  let descriptions = {
+    "English": "Learn and prepare for your entrance exam.",
+    "Afaan Oromoo": "Baradhaa, qormaata seensaa keessaniif qophaa'aa.",
+    "Amharic": "ለመግቢያ ፈተናዎ ይዘጋጁ።",
+    "Arabic": "استعد لامتحان القبول الخاص بك."
+  };
+
+  document.getElementById("languagePage").classList.add("hidden");
+  document.getElementById("welcomePage").classList.remove("hidden");
+
+  document.getElementById("welcomeTitle").innerText = titles[language];
+  document.getElementById("welcomeText").innerText = descriptions[language];
+}
+
+function showDashboard() {
+  document.getElementById("welcomePage").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+}
+
+function goBack() {
+  document.getElementById("welcomePage").classList.add("hidden");
+  document.getElementById("languagePage").classList.remove("hidden");
+}
+</script>
 
 </body>
 </html>
